@@ -1,0 +1,3538 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Kalkulator Area Pencarian — BASARNAS Aceh</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
+
+    :root{
+      --bg:#0B1216;
+      --bg-deep:#080D10;
+      --panel:#171F23;
+      --panel-raised:#1E2A2E;
+      --border:rgba(159,178,168,0.16);
+      --border-strong:rgba(159,178,168,0.28);
+      --ink:#EEF3F0;
+      --ink-muted:#8CA39A;
+      --ink-dim:#54655D;
+
+      --orange:#FF6A2E;
+      --orange-soft:rgba(255,106,46,0.14);
+      --orange-soft-strong:rgba(255,106,46,0.32);
+
+      --teal:#45B39E;
+      --teal-soft:rgba(69,179,158,0.14);
+      --teal-soft-strong:rgba(69,179,158,0.32);
+
+      --gold:#D8AA5D;
+      --gold-soft:rgba(216,170,93,0.14);
+      --gold-soft-strong:rgba(216,170,93,0.32);
+
+      --radius-sm:10px;
+      --radius-md:18px;
+
+      --font-display:'Space Grotesk',sans-serif;
+      --font-body:'Inter',sans-serif;
+      --font-mono:'JetBrains Mono',monospace;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html,
+    body{
+      margin:0;
+      padding:0;
+    }
+
+    body{
+      background:var(--bg);
+      color:var(--ink);
+      font-family:var(--font-body);
+      line-height:1.5;
+      -webkit-font-smoothing:antialiased;
+
+      background-image:
+        radial-gradient(
+          circle at 88% -8%,
+          rgba(69,179,158,0.10),
+          transparent 45%
+        ),
+        radial-gradient(
+          circle at -8% 25%,
+          rgba(255,106,46,0.07),
+          transparent 40%
+        ),
+        radial-gradient(
+          circle at 50% 110%,
+          rgba(216,170,93,0.05),
+          transparent 50%
+        );
+
+      background-attachment:fixed;
+    }
+
+    ::selection{
+      background:var(--orange-soft-strong);
+    }
+
+    a{
+      color:var(--teal);
+    }
+
+    :focus-visible{
+      outline:2px solid var(--orange);
+      outline-offset:2px;
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      *{
+        animation-duration:0.001ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:0.001ms !important;
+      }
+    }
+
+    /* =========================
+       EMBLEM
+    ========================= */
+
+    .emblem{
+      flex:none;
+      display:block;
+      filter:drop-shadow(
+        0 2px 6px rgba(0,0,0,0.35)
+      );
+    }
+
+    /* =========================
+       LOGIN SCREEN
+    ========================= */
+
+    .login-container{
+      min-height:100vh;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      padding:20px;
+
+      position:relative;
+      overflow:hidden;
+    }
+
+    .login-container::before{
+      content:'';
+
+      position:absolute;
+      inset:0;
+
+      background-image:
+        radial-gradient(
+          circle at 20% 15%,
+          rgba(69,179,158,0.10),
+          transparent 40%
+        ),
+        radial-gradient(
+          circle at 82% 82%,
+          rgba(255,106,46,0.09),
+          transparent 42%
+        );
+
+      pointer-events:none;
+    }
+
+    .login-container::after{
+      content:'';
+
+      position:absolute;
+      inset:0;
+
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          rgba(159,178,168,0.035) 0px,
+          rgba(159,178,168,0.035) 1px,
+          transparent 1px,
+          transparent 46px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          rgba(159,178,168,0.035) 0px,
+          rgba(159,178,168,0.035) 1px,
+          transparent 1px,
+          transparent 46px
+        );
+
+      pointer-events:none;
+
+      mask-image:
+        radial-gradient(
+          circle at 50% 40%,
+          black,
+          transparent 75%
+        );
+    }
+
+    .login-card{
+      width:100%;
+      max-width:400px;
+
+      background:
+        linear-gradient(
+          180deg,
+          var(--panel-raised),
+          var(--panel)
+        );
+
+      border:1px solid var(--border-strong);
+      border-radius:var(--radius-md);
+
+      padding:30px 28px 32px;
+
+      box-shadow:
+        0 24px 60px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.03);
+
+      position:relative;
+      overflow:hidden;
+
+      z-index:1;
+
+      text-align:center;
+    }
+
+    .login-card::before{
+      content:'';
+
+      position:absolute;
+
+      top:0;
+      left:0;
+      right:0;
+
+      height:3px;
+
+      background:
+        linear-gradient(
+          90deg,
+          var(--teal),
+          var(--gold),
+          var(--orange)
+        );
+    }
+
+    .login-emblem-row{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+
+      gap:12px;
+
+      margin-bottom:18px;
+    }
+
+    .login-card .eyebrow{
+      font-family:var(--font-mono);
+      font-size:10.5px;
+
+      letter-spacing:0.16em;
+
+      color:var(--orange);
+
+      text-transform:uppercase;
+
+      margin:0;
+
+      font-weight:700;
+    }
+
+    .login-card h2{
+      font-family:var(--font-display);
+
+      font-size:23px;
+
+      margin:2px 0 4px;
+
+      color:var(--ink);
+
+      letter-spacing:-0.01em;
+    }
+
+    .login-card p.sub{
+      font-size:12.5px;
+
+      color:var(--ink-muted);
+
+      margin:0 0 4px;
+
+      text-align:center;
+    }
+
+    .login-coords{
+      font-family:var(--font-mono);
+
+      font-size:11px;
+
+      color:var(--ink-dim);
+
+      letter-spacing:0.04em;
+
+      margin:10px 0 22px;
+    }
+
+    .login-divider{
+      height:1px;
+
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          var(--border-strong),
+          transparent
+        );
+
+      margin:4px 0 6px;
+    }
+
+    /* =========================
+       POWER BUTTON
+    ========================= */
+
+    .power-zone{
+      display:flex;
+      flex-direction:column;
+
+      align-items:center;
+      justify-content:center;
+
+      padding:10px 0 4px;
+    }
+
+    .radar-wrap{
+      position:relative;
+
+      width:150px;
+      height:150px;
+
+      display:flex;
+
+      align-items:center;
+      justify-content:center;
+    }
+
+    .radar-ring{
+      position:absolute;
+      inset:0;
+
+      border-radius:50%;
+
+      border:1px dashed var(--border-strong);
+    }
+
+    .radar-ring.inner{
+      inset:20px;
+
+      border-style:solid;
+
+      border-color:var(--border);
+    }
+
+    .radar-sweep{
+      position:absolute;
+
+      inset:0;
+
+      border-radius:50%;
+
+      background:
+        conic-gradient(
+          from 0deg,
+          rgba(69,179,158,0.40),
+          transparent 28%,
+          transparent 100%
+        );
+
+      animation:radar-spin 4.5s linear infinite;
+
+      -webkit-mask-image:
+        radial-gradient(
+          circle,
+          black 62%,
+          transparent 63%
+        );
+
+      mask-image:
+        radial-gradient(
+          circle,
+          black 62%,
+          transparent 63%
+        );
+    }
+
+    @keyframes radar-spin{
+      to{
+        transform:rotate(360deg);
+      }
+    }
+
+    .power-btn{
+      position:relative;
+      z-index:2;
+
+      width:100px;
+      height:100px;
+
+      border-radius:50%;
+
+      border:none;
+
+      cursor:pointer;
+
+      background:
+        radial-gradient(
+          circle at 32% 28%,
+          rgba(255,255,255,0.16),
+          transparent 55%
+        ),
+        linear-gradient(
+          160deg,
+          var(--orange),
+          #c74a1a
+        );
+
+      box-shadow:
+        0 0 0 1px rgba(255,106,46,0.35),
+        0 10px 26px rgba(255,106,46,0.28),
+        inset 0 2px 3px rgba(255,255,255,0.25),
+        inset 0 -6px 10px rgba(0,0,0,0.30);
+
+      display:flex;
+
+      align-items:center;
+      justify-content:center;
+
+      transition:
+        transform .12s ease,
+        box-shadow .2s ease;
+    }
+
+    .power-btn svg{
+      width:38px;
+      height:38px;
+
+      stroke:#1A0D06;
+
+      filter:
+        drop-shadow(
+          0 1px 0 rgba(255,255,255,0.15)
+        );
+    }
+
+    .power-btn:hover{
+      transform:translateY(-2px);
+
+      box-shadow:
+        0 0 0 1px rgba(255,106,46,0.55),
+        0 14px 32px rgba(255,106,46,0.38),
+        inset 0 2px 3px rgba(255,255,255,0.3),
+        inset 0 -6px 10px rgba(0,0,0,0.30);
+    }
+
+    .power-btn:active{
+      transform:translateY(0) scale(0.96);
+    }
+
+    .power-label{
+      margin-top:20px;
+
+      font-family:var(--font-mono);
+
+      font-size:12px;
+
+      letter-spacing:0.12em;
+
+      text-transform:uppercase;
+
+      color:var(--ink-muted);
+
+      font-weight:600;
+    }
+
+    .power-label .accent{
+      color:var(--orange);
+    }
+
+    .power-status{
+      margin-top:6px;
+
+      font-size:11px;
+
+      color:var(--ink-dim);
+
+      display:flex;
+
+      align-items:center;
+      justify-content:center;
+
+      gap:6px;
+    }
+
+    .power-status .dot{
+      width:6px;
+      height:6px;
+
+      border-radius:50%;
+
+      background:var(--teal);
+
+      animation:blink 1.6s ease-in-out infinite;
+    }
+
+    @keyframes blink{
+      0%,100%{
+        opacity:1;
+      }
+
+      50%{
+        opacity:.25;
+      }
+    }
+
+    /* =========================
+       MAIN APP
+    ========================= */
+
+    .wrap{
+      max-width:1120px;
+
+      margin:0 auto;
+
+      padding:20px 20px 64px;
+    }
+
+    /* =========================
+       OPS BAR
+    ========================= */
+
+    .ops-bar{
+      display:flex;
+
+      align-items:center;
+      justify-content:center;
+
+      flex-wrap:wrap;
+
+      gap:10px 14px;
+
+      font-family:var(--font-mono);
+
+      font-size:11px;
+
+      letter-spacing:0.08em;
+
+      color:var(--ink-dim);
+
+      padding:10px 12px;
+
+      margin-bottom:16px;
+
+      border-bottom:1px solid var(--border);
+
+      text-transform:uppercase;
+    }
+
+    .ops-bar .ops-item{
+      color:var(--ink-muted);
+    }
+
+    .ops-bar .ops-item.accent{
+      color:var(--teal);
+    }
+
+    .ops-bar .ops-sep{
+      color:var(--ink-dim);
+
+      opacity:.5;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    header{
+      position:relative;
+
+      padding:28px 28px 26px;
+
+      margin-bottom:24px;
+
+      border-radius:var(--radius-md);
+
+      border:1px solid var(--border);
+
+      background:
+        linear-gradient(
+          180deg,
+          var(--panel-raised),
+          var(--panel)
+        );
+
+      overflow:hidden;
+
+      display:flex;
+
+      align-items:flex-start;
+
+      gap:18px;
+
+      flex-wrap:wrap;
+    }
+
+    header::after{
+      content:'';
+
+      position:absolute;
+
+      top:-40px;
+      right:-40px;
+
+      width:240px;
+      height:240px;
+
+      border-radius:50%;
+
+      border:1px dashed var(--border);
+
+      pointer-events:none;
+    }
+
+    header .head-inner{
+      position:relative;
+
+      z-index:1;
+
+      max-width:600px;
+
+      flex:1;
+
+      min-width:220px;
+    }
+
+    .eyebrow{
+      font-family:var(--font-mono);
+
+      font-size:11.5px;
+
+      letter-spacing:0.14em;
+
+      color:var(--orange);
+
+      text-transform:uppercase;
+
+      margin:0 0 10px;
+
+      font-weight:600;
+    }
+
+    h1{
+      font-family:var(--font-display);
+
+      font-size:clamp(24px,4vw,32px);
+
+      font-weight:700;
+
+      margin:0 0 10px;
+
+      letter-spacing:-0.01em;
+    }
+
+    header p.sub{
+      color:var(--ink-muted);
+
+      font-size:14px;
+
+      margin:0;
+
+      max-width:56ch;
+    }
+
+    /* =========================
+       LAYOUT
+    ========================= */
+
+    .grid{
+      display:grid;
+
+      grid-template-columns:1fr;
+
+      gap:20px;
+    }
+
+    @media (min-width:900px){
+      .grid{
+        grid-template-columns:
+          minmax(0,1.05fr)
+          minmax(0,0.95fr);
+
+        align-items:start;
+      }
+    }
+
+    .panel{
+      background:var(--panel);
+
+      border:1px solid var(--border);
+
+      border-radius:var(--radius-md);
+
+      padding:22px 22px 24px;
+    }
+
+    .panel + .panel{
+      margin-top:16px;
+    }
+
+    .col-right{
+      display:flex;
+
+      flex-direction:column;
+
+      gap:16px;
+    }
+
+    /* =========================
+       FORM TAB NAVIGATION (BARU)
+    ========================= */
+    .form-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .form-tab-btn {
+      flex: 1;
+      background: var(--panel-raised);
+      border: 1px solid var(--border-strong);
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 10px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .form-tab-btn:hover {
+      color: var(--ink);
+      border-color: var(--teal);
+    }
+
+    .form-tab-btn.active {
+      background: var(--teal-soft);
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    .form-step-pane {
+      display: none;
+    }
+
+    .form-step-pane.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* =========================
+       STEPS
+    ========================= */
+
+    .step{
+      display:flex;
+
+      gap:14px;
+    }
+
+    .step + .step{
+      margin-top:20px;
+
+      padding-top:20px;
+
+      border-top:1px solid var(--border);
+    }
+
+    .step-num{
+      flex:none;
+
+      width:30px;
+      height:30px;
+
+      border-radius:50%;
+
+      border:1px solid var(--border-strong);
+
+      display:flex;
+
+      align-items:center;
+      justify-content:center;
+
+      font-family:var(--font-mono);
+
+      font-size:13px;
+
+      font-weight:600;
+
+      color:var(--ink-muted);
+
+      margin-top:1px;
+    }
+
+    .step-body{
+      flex:1;
+
+      min-width:0;
+    }
+
+    .step-head{
+      display:flex;
+
+      align-items:baseline;
+      justify-content:space-between;
+
+      gap:10px;
+
+      flex-wrap:wrap;
+
+      margin-bottom:10px;
+    }
+
+    .step-title{
+      font-family:var(--font-display);
+
+      font-size:16.5px;
+
+      font-weight:600;
+
+      margin:0;
+    }
+
+    .step-help{
+      font-size:12.5px;
+
+      color:var(--ink-dim);
+
+      margin:6px 0 0;
+
+      line-height:1.5;
+    }
+
+    /* =========================
+       BUTTON
+    ========================= */
+
+    .ghost-btn{
+      background:none;
+
+      border:1px solid var(--border-strong);
+
+      color:var(--ink-muted);
+
+      font-family:var(--font-body);
+
+      font-size:12px;
+
+      font-weight:500;
+
+      padding:6px 11px;
+
+      border-radius:999px;
+
+      cursor:pointer;
+
+      transition:
+        border-color .15s ease,
+        color .15s ease;
+
+      white-space:nowrap;
+    }
+
+    .ghost-btn:hover{
+      border-color:var(--teal);
+
+      color:var(--teal);
+    }
+
+    /* =========================
+       FIELDS
+    ========================= */
+
+    .field-row{
+      display:grid;
+
+      grid-template-columns:1fr;
+
+      gap:12px;
+    }
+
+    .field-row.two{
+      grid-template-columns:1fr 1fr;
+    }
+
+    @media (max-width:420px){
+      .field-row.two{
+        grid-template-columns:1fr;
+      }
+    }
+
+    .field label{
+      display:block;
+
+      font-size:12px;
+
+      color:var(--ink-muted);
+
+      margin-bottom:6px;
+
+      font-weight:500;
+    }
+
+    .field input[type="text"],
+    .field input[type="password"],
+    .field input[type="number"],
+    .field select{
+      width:100%;
+
+      background:var(--panel-raised);
+
+      border:1px solid var(--border-strong);
+
+      color:var(--ink);
+
+      font-family:var(--font-mono);
+
+      font-size:14.5px;
+
+      padding:11px 12px;
+
+      border-radius:var(--radius-sm);
+
+      min-height:44px;
+    }
+
+    .field input::placeholder{
+      color:var(--ink-dim);
+
+      font-family:var(--font-body);
+    }
+
+    .field select{
+      font-family:var(--font-body);
+    }
+
+    .scale-prefix{
+      display:flex;
+
+      align-items:center;
+
+      gap:8px;
+
+      font-family:var(--font-mono);
+
+      font-size:14.5px;
+
+      color:var(--ink-muted);
+    }
+
+    /* =========================
+       VALIDATION STATES
+    ========================= */
+
+    .field.has-error input{
+      border-color:#E5484D;
+
+      background:rgba(229,72,77,0.08);
+    }
+
+    .field-error-msg{
+      display:none;
+
+      margin-top:6px;
+
+      font-size:11.5px;
+
+      color:#FF8A80;
+
+      font-family:var(--font-body);
+    }
+
+    .field.has-error .field-error-msg{
+      display:block;
+    }
+
+    /* =========================
+       ELAPSED TIME
+    ========================= */
+
+    .elapsed-readout{
+      margin-top:14px;
+
+      font-family:var(--font-mono);
+
+      font-size:13.5px;
+
+      color:var(--ink);
+
+      background:var(--panel-raised);
+
+      border:1px solid var(--border);
+
+      border-radius:var(--radius-sm);
+
+      padding:10px 12px;
+    }
+
+    .elapsed-readout .k{
+      color:var(--ink-dim);
+
+      font-family:var(--font-body);
+
+      margin-right:6px;
+    }
+
+    /* =========================
+       SPEED
+    ========================= */
+
+    .unit-toggle{
+      display:inline-flex;
+
+      border:1px solid var(--border-strong);
+
+      border-radius:var(--radius-sm);
+
+      overflow:hidden;
+
+      margin-top:8px;
+    }
+
+    .unit-toggle button{
+      font-family:var(--font-mono);
+
+      font-size:12.5px;
+
+      padding:8px 12px;
+
+      background:var(--panel-raised);
+
+      color:var(--ink-muted);
+
+      border:none;
+
+      cursor:pointer;
+    }
+
+    .unit-toggle button.active{
+      background:var(--teal);
+
+      color:#04211C;
+
+      font-weight:700;
+    }
+
+    .unit-toggle button + button{
+      border-left:1px solid var(--border-strong);
+    }
+
+    /* =========================
+       MAP
+    ========================= */
+
+    .map-card{
+      display:flex;
+
+      flex-direction:column;
+
+      padding-bottom:18px;
+    }
+
+    .map-card h2{
+      font-family:var(--font-display);
+
+      font-size:16px;
+
+      font-weight:600;
+
+      margin:0 0 2px;
+    }
+
+    .map-card .map-sub{
+      font-size:12px;
+
+      color:var(--ink-dim);
+
+      margin:0 0 12px;
+    }
+
+    #map{
+      width:100%;
+
+      height:320px;
+
+      border-radius:var(--radius-sm);
+
+      border:1px solid var(--border-strong);
+
+      z-index:1;
+    }
+
+    .diag-legend{
+      display:flex;
+
+      gap:14px;
+
+      margin-top:12px;
+
+      flex-wrap:wrap;
+
+      justify-content:center;
+    }
+
+    .diag-legend .item{
+      display:flex;
+
+      align-items:center;
+
+      gap:6px;
+
+      font-size:11.5px;
+
+      color:var(--ink-muted);
+
+      font-family:var(--font-mono);
+    }
+
+    .diag-legend .dot{
+      width:9px;
+      height:9px;
+
+      border-radius:50%;
+    }
+
+    .diag-legend .square-icon{
+      width:10px;
+      height:10px;
+
+      border:1px dashed var(--orange);
+    }
+
+    /* =========================
+       MAP CORNER LABEL
+    ========================= */
+
+    .map-corner-label{
+      background:rgba(255,106,46,0.9);
+
+      border:1px solid #1A0D06;
+
+      color:#1A0D06;
+
+      font-family:var(--font-mono);
+
+      font-weight:700;
+
+      font-size:11px;
+
+      padding:2px 6px;
+
+      border-radius:4px;
+
+      text-align:center;
+
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* =========================
+       RESULTS
+    ========================= */
+
+    .results{
+      display:flex;
+
+      flex-direction:column;
+
+      gap:12px;
+    }
+
+    .result-card{
+      background:var(--panel-raised);
+
+      border:1px solid var(--border);
+
+      border-radius:var(--radius-sm);
+
+      padding:15px 16px;
+    }
+
+    .result-card .rc-head{
+      display:flex;
+
+      align-items:center;
+
+      justify-content:space-between;
+
+      margin-bottom:10px;
+    }
+
+    .result-card .rc-title{
+      font-family:var(--font-mono);
+
+      font-size:11px;
+
+      letter-spacing:0.08em;
+
+      text-transform:uppercase;
+
+      color:var(--ink-muted);
+
+      font-weight:600;
+    }
+
+    .result-card .rc-tag{
+      font-size:10.5px;
+
+      font-family:var(--font-mono);
+
+      padding:2px 8px;
+
+      border-radius:999px;
+    }
+
+    .rc-tag.teal{
+      background:var(--teal-soft);
+
+      color:var(--teal);
+    }
+
+    .rc-tag.orange{
+      background:var(--orange-soft);
+
+      color:var(--orange);
+    }
+
+    .rc-tag.gold{
+      background:var(--gold-soft);
+
+      color:var(--gold);
+    }
+
+    .rc-rows{
+      display:grid;
+
+      grid-template-columns:1fr 1fr 1fr;
+
+      gap:10px;
+    }
+
+    @media (max-width:520px){
+      .rc-rows{
+        grid-template-columns:1fr;
+      }
+    }
+
+    .rc-rows .rrow .rlabel{
+      font-size:11px;
+
+      color:var(--ink-dim);
+
+      margin-bottom:3px;
+    }
+
+    .rc-rows .rrow .rval{
+      font-family:var(--font-mono);
+
+      font-size:18px;
+
+      font-weight:600;
+
+      color:var(--ink);
+    }
+
+    .rc-rows .rrow .runit{
+      font-size:11px;
+
+      color:var(--ink-muted);
+
+      margin-left:3px;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer{
+      margin-top:26px;
+
+      padding:16px 4px 4px;
+
+      font-size:12px;
+
+      color:var(--ink-dim);
+
+      line-height:1.6;
+
+      border-top:1px solid var(--border);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================
+       HALAMAN LOGIN
+  ========================= -->
+
+  <div id="loginScreen" class="login-container">
+
+    <div class="login-card">
+
+      <div class="login-emblem-row">
+
+        <svg
+          class="emblem"
+          viewBox="0 0 64 64"
+          width="52"
+          height="52"
+          fill="none"
+        >
+
+          <circle
+            cx="32"
+            cy="32"
+            r="27"
+            stroke="url(#gEmblemLogin)"
+            stroke-width="5"
+          />
+
+          <g
+            stroke="#0B1216"
+            stroke-width="5"
+            stroke-linecap="round"
+          >
+
+            <line x1="32" y1="6" x2="32" y2="15"/>
+            <line x1="32" y1="49" x2="32" y2="58"/>
+            <line x1="6" y1="32" x2="15" y2="32"/>
+            <line x1="49" y1="32" x2="58" y2="32"/>
+
+          </g>
+
+          <path
+            d="M32 21a10.5 10.5 0 1 0 0.001 0z"
+            stroke="#EEF3F0"
+            stroke-width="2"
+            fill="none"
+          />
+
+          <path
+            d="M32 25v15M26 36h12M23 30l9 6 9-6"
+            stroke="#EEF3F0"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            fill="none"
+          />
+
+          <defs>
+
+            <linearGradient
+              id="gEmblemLogin"
+              x1="5"
+              y1="5"
+              x2="59"
+              y2="59"
+              gradientUnits="userSpaceOnUse"
+            >
+
+              <stop stop-color="#FF6A2E"/>
+              <stop offset="0.55" stop-color="#D8AA5D"/>
+              <stop offset="1" stop-color="#45B39E"/>
+
+            </linearGradient>
+
+          </defs>
+
+        </svg>
+
+        <p class="eyebrow">
+          SAR Ops Console
+        </p>
+
+      </div>
+
+      <h2>BASARNAS ACEH</h2>
+
+      <p class="sub">
+        Jl. Sultan Malikul Saleh No.108, Lhong Raya,
+        Kec. Banda Raya, Kota Banda Aceh,
+        Aceh 23231
+      </p>
+
+      <div class="login-coords">
+        05°32'50"N&nbsp;
+        95°19'26"E
+        &nbsp;·&nbsp;
+        STASIUN BANDA ACEH
+      </div>
+
+      <div class="login-divider"></div>
+
+      <p
+        class="sub"
+        style="margin-top:14px;"
+      >
+        Tekan tombol untuk mengaktifkan
+        Kalkulator Area Pencarian.
+      </p>
+
+      <div class="power-zone">
+
+        <div class="radar-wrap">
+
+          <span class="radar-ring"></span>
+
+          <span class="radar-ring inner"></span>
+
+          <span class="radar-sweep"></span>
+
+          <button
+            type="button"
+            class="power-btn"
+            id="powerBtn"
+            aria-label="Aktifkan aplikasi"
+          >
+
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke-width="2.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+
+              <path d="M12 2v8"></path>
+
+              <path
+                d="M18.36 6.64a9 9 0 1 1-12.73 0"
+              ></path>
+
+            </svg>
+
+          </button>
+
+        </div>
+
+        <div class="power-label">
+          Tekan &amp;
+          <span class="accent">Mulai</span>
+        </div>
+
+        <div class="power-status">
+          <span class="dot"></span>
+          Sistem siap
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       KONTEN UTAMA
+  ========================= -->
+
+  <div
+    class="wrap"
+    id="mainContent"
+    style="display:none;"
+  >
+
+    <!-- OPS BAR -->
+
+    <div class="ops-bar">
+
+      <span class="ops-item accent">
+        BASARNAS ACEH
+      </span>
+
+      <span class="ops-sep">·</span>
+
+      <span class="ops-item">
+        SAR OPS CONSOLE
+      </span>
+
+      <span class="ops-sep">·</span>
+
+      <span class="ops-item">
+        05°32'50"N 95°19'26"E
+      </span>
+
+    </div>
+
+
+    <!-- HEADER -->
+
+    <header>
+
+      <svg
+        class="emblem"
+        viewBox="0 0 64 64"
+        width="50"
+        height="50"
+        fill="none"
+      >
+
+        <circle
+          cx="32"
+          cy="32"
+          r="27"
+          stroke="url(#gEmblemHead)"
+          stroke-width="5"
+        />
+
+        <g
+          stroke="#171F23"
+          stroke-width="5"
+          stroke-linecap="round"
+        >
+
+          <line x1="32" y1="6" x2="32" y2="15"/>
+          <line x1="32" y1="49" x2="32" y2="58"/>
+          <line x1="6" y1="32" x2="15" y2="32"/>
+          <line x1="49" y1="32" x2="58" y2="32"/>
+
+        </g>
+
+        <path
+          d="M32 21a10.5 10.5 0 1 0 0.001 0z"
+          stroke="#EEF3F0"
+          stroke-width="2"
+          fill="none"
+        />
+
+        <path
+          d="M32 25v15M26 36h12M23 30l9 6 9-6"
+          stroke="#EEF3F0"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+        />
+
+        <defs>
+
+          <linearGradient
+            id="gEmblemHead"
+            x1="5"
+            y1="5"
+            x2="59"
+            y2="59"
+            gradientUnits="userSpaceOnUse"
+          >
+
+            <stop stop-color="#FF6A2E"/>
+            <stop offset="0.55" stop-color="#D8AA5D"/>
+            <stop offset="1" stop-color="#45B39E"/>
+
+          </linearGradient>
+
+        </defs>
+
+      </svg>
+
+
+      <div class="head-inner">
+
+        <p class="eyebrow">
+          Perencanaan Operasi SAR
+        </p>
+
+        <h1>
+          Kalkulator Area Pencarian
+        </h1>
+
+        <p class="sub">
+          Menghitung Possible Search Area,
+          Probable Search Area, dan luas area
+          pencarian akhir berdasarkan input manual.
+        </p>
+
+      </div>
+
+
+      <div style="align-self:flex-start;">
+
+        <button
+          class="ghost-btn"
+          id="logoutBtn"
+          type="button"
+        >
+          Kembali
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <!-- GRID -->
+
+    <div class="grid">
+
+
+      <!-- =========================
+           LEFT : INPUT (DIBAGI MENJADI TAB/KATEGORI)
+      ========================= -->
+
+      <div class="panel">
+
+        <!-- Navigasi Tab Form -->
+        <div class="form-tabs">
+          <button type="button" class="form-tab-btn active" data-target="pane1">1. Posisi & Waktu</button>
+          <button type="button" class="form-tab-btn" data-target="pane2">2. Asumsi & Skala</button>
+        </div>
+
+
+        <!-- PANE 1: POSISI & WAKTU -->
+        <div id="pane1" class="form-step-pane active">
+
+          <!-- STEP 1 -->
+          <div class="step">
+
+            <div class="step-num">
+              1
+            </div>
+
+            <div class="step-body">
+
+              <h3 class="step-title">
+                Koordinat LKP
+                (Titik Terakhir)
+              </h3>
+
+              <div class="field-row two">
+
+                <div class="field" id="latField">
+
+                  <label for="latInput">
+                    Latitude (Lintang)
+                  </label>
+
+                  <input
+                    type="number"
+                    id="latInput"
+                    step="any"
+                    min="-90"
+                    max="90"
+                    inputmode="decimal"
+                    placeholder="Contoh: 5.548000"
+                  />
+
+                  <div class="field-error-msg" id="latError">
+                    Latitude harus di antara -90 dan 90.
+                  </div>
+
+                </div>
+
+
+                <div class="field" id="lngField">
+
+                  <label for="lngInput">
+                    Longitude (Bujur)
+                  </label>
+
+                  <input
+                    type="number"
+                    id="lngInput"
+                    step="any"
+                    min="-180"
+                    max="180"
+                    inputmode="decimal"
+                    placeholder="Contoh: 95.323800"
+                  />
+
+                  <div class="field-error-msg" id="lngError">
+                    Longitude harus di antara -180 dan 180.
+                  </div>
+
+                </div>
+
+              </div>
+
+              <p class="step-help">
+                Masukkan titik pusat lokasi terakhir
+                korban terlihat (Last Known Position).
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- STEP 2 -->
+          <div class="step">
+
+            <div class="step-num">
+              2
+            </div>
+
+            <div class="step-body">
+
+              <h3 class="step-title">
+                Waktu Operasi
+              </h3>
+
+              <div class="field-row two">
+
+                <div class="field">
+
+                  <label for="manualValue">
+                    Jumlah Waktu
+                  </label>
+
+                  <input
+                    type="number"
+                    id="manualValue"
+                    min="0"
+                    step="any"
+                    inputmode="decimal"
+                    placeholder="Contoh: 2"
+                  />
+
+                </div>
+
+
+                <div class="field">
+
+                  <label for="manualUnit">
+                    Satuan
+                  </label>
+
+                  <select id="manualUnit">
+
+                    <option value="hari">
+                      Hari
+                    </option>
+
+                    <option value="jam">
+                      Jam
+                    </option>
+
+                  </select>
+
+                </div>
+
+              </div>
+
+
+              <div class="elapsed-readout">
+
+                <span class="k">
+                  Waktu berlalu:
+                </span>
+
+                <span id="elapsedDisplay">
+                  0 jam
+                </span>
+
+              </div>
+
+
+              <p class="step-help">
+                Masukkan durasi operasi secara manual.
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- PANE 2: ASUMSI & SKALA -->
+        <div id="pane2" class="form-step-pane">
+
+          <!-- STEP 3 -->
+          <div class="step">
+
+            <div class="step-num">
+              3
+            </div>
+
+            <div class="step-body">
+
+              <h3 class="step-title">
+                Kecepatan Asumsi Korban
+              </h3>
+
+              <div class="field-row">
+
+                <div class="field">
+
+                  <label for="speed">
+                    Kecepatan pergerakan
+                  </label>
+
+                  <input
+                    type="number"
+                    id="speed"
+                    min="0"
+                    step="any"
+                    inputmode="decimal"
+                    placeholder="Contoh: 1"
+                  />
+
+                </div>
+
+              </div>
+
+
+              <div
+                class="unit-toggle"
+                id="speedUnitControl"
+              >
+
+                <button
+                  class="active"
+                  data-unit="hari"
+                  type="button"
+                >
+                  km / hari
+                </button>
+
+                <button
+                  data-unit="jam"
+                  type="button"
+                >
+                  km / jam
+                </button>
+
+              </div>
+
+
+              <p class="step-help">
+                Sesuaikan kecepatan pergerakan korban
+                berdasarkan kondisi medan.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- STEP 4 -->
+          <div class="step">
+
+            <div class="step-num">
+              4
+            </div>
+
+            <div class="step-body">
+
+              <h3 class="step-title">
+                Skala Peta CETAK
+              </h3>
+
+              <div class="scale-prefix">
+
+                <span>
+                  1&nbsp;:
+                </span>
+
+                <div
+                  class="field"
+                  style="flex:1;"
+                >
+
+                  <input
+                    type="number"
+                    id="scale"
+                    min="1"
+                    step="1"
+                    inputmode="numeric"
+                    placeholder="Contoh: 25000"
+                  />
+
+                </div>
+
+              </div>
+
+
+              <p class="step-help">
+                Digunakan untuk menghitung ukuran
+                radius pada peta kertas (cm).
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+      </div>
+
+
+      <!-- =========================
+           RIGHT : MAP + RESULT
+      ========================= -->
+
+      <div class="col-right">
+
+
+        <!-- MAP -->
+
+        <div class="panel map-card">
+
+          <h2>
+            Peta Area Pencarian Interaktif
+          </h2>
+
+          <p class="map-sub">
+            Visualisasi area pencarian berdasarkan
+            input manual.
+          </p>
+
+          <div id="map"></div>
+
+
+          <div class="diag-legend">
+
+            <div class="item">
+
+              <span
+                class="dot"
+                style="background:var(--teal);"
+              ></span>
+
+              Possible
+
+            </div>
+
+
+            <div class="item">
+
+              <span
+                class="dot"
+                style="background:var(--orange);"
+              ></span>
+
+              Probable
+
+            </div>
+
+
+            <div class="item">
+
+              <span class="square-icon"></span>
+
+              Search Area Akhir
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- RESULTS -->
+
+        <div class="panel">
+
+          <div class="results">
+
+
+            <!-- POSSIBLE -->
+
+            <div class="result-card">
+
+              <div class="rc-head">
+
+                <span class="rc-title">
+                  Possible Search Area
+                </span>
+
+                <span class="rc-tag teal">
+                  Hasil Teori
+                </span>
+
+              </div>
+
+
+              <div class="rc-rows">
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Jari-jari (r)
+                  </div>
+
+                  <div>
+
+                    <span
+                      class="rval"
+                      id="r1Val"
+                    >
+                      –
+                    </span>
+
+                    <span class="runit">
+                      km
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Luas (π·r²)
+                  </div>
+
+                  <div>
+
+                    <span
+                      class="rval"
+                      id="area1Val"
+                    >
+                      –
+                    </span>
+
+                    <span class="runit">
+                      km²
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Radius di peta
+                  </div>
+
+                  <div>
+
+                    <span
+                      class="rval"
+                      id="r1cmVal"
+                    >
+                      –
+                    </span>
+
+                    <span class="runit">
+                      cm
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- PROBABLE -->
+
+            <div class="result-card">
+
+              <div class="rc-head">
+
+                <span class="rc-title">
+                  Probable Search Area
+                </span>
+
+                <span class="rc-tag orange">
+                  × 1/8
+                </span>
+
+              </div>
+
+
+              <div class="rc-rows">
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Jari-jari (r)
+                  </div>
+
+                  <div>
+
+                    <span
+                      class="rval"
+                      id="r2Val"
+                    >
+                      –
+                    </span>
+
+                    <span class="runit">
+                      km
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Luas
+                  </div>
+
+                  <div>
+
+                    <span
+                      class="rval"
+                      id="area2Val"
+                    >
+                      –
+                    </span>
+
+                    <span class="runit">
+                      km²
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Radius di peta
+                  </div>
+
+                  <div>
+
+                    <span
+                      class="rval"
+                      id="r2cmVal"
+                    >
+                      –
+                    </span>
+
+                    <span class="runit">
+                      cm
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- FINAL AREA -->
+
+            <div class="result-card">
+
+              <div class="rc-head">
+
+                <span class="rc-title">
+                  Luas Search Area Akhir
+                </span>
+
+                <span class="rc-tag gold">
+                  Persegi
+                </span>
+
+              </div>
+
+
+              <div class="rc-rows">
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Sisi (diameter probable)
+                  </div>
+
+                  <div>
+
+                    <span
+                      class="rval"
+                      id="sisiVal"
+                    >
+                      –
+                    </span>
+
+                    <span class="runit">
+                      km
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Luas (sisi × sisi)
+                  </div>
+
+                  <div>
+
+                    <span
+                      class="rval"
+                      id="areaFinalVal"
+                    >
+                      –
+                    </span>
+
+                    <span class="runit">
+                      km²
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- COORDINATES -->
+
+            <div class="result-card">
+
+              <div class="rc-head">
+
+                <span class="rc-title">
+                  Titik Koordinat Area
+                  (A, B, C, D)
+                </span>
+
+                <span class="rc-tag orange">
+                  Lintang &amp; Bujur
+                </span>
+
+              </div>
+
+
+              <div
+                class="rc-rows"
+                style="
+                  grid-template-columns:1fr 1fr;
+                  gap:10px;
+                  margin-top:6px;
+                "
+              >
+
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Titik A
+                    (SW - Kiri Bawah)
+                  </div>
+
+                  <div
+                    style="
+                      font-family:var(--font-mono);
+                      font-size:13px;
+                      font-weight:600;
+                      color:var(--ink);
+                    "
+                    id="coordA"
+                  >
+                    –
+                  </div>
+
+                </div>
+
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Titik B
+                    (NW - Kiri Atas)
+                  </div>
+
+                  <div
+                    style="
+                      font-family:var(--font-mono);
+                      font-size:13px;
+                      font-weight:600;
+                      color:var(--ink);
+                    "
+                    id="coordB"
+                  >
+                    –
+                  </div>
+
+                </div>
+
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Titik C
+                    (NE - Kanan Atas)
+                  </div>
+
+                  <div
+                    style="
+                      font-family:var(--font-mono);
+                      font-size:13px;
+                      font-weight:600;
+                      color:var(--ink);
+                    "
+                    id="coordC"
+                  >
+                    –
+                  </div>
+
+                </div>
+
+
+                <div class="rrow">
+
+                  <div class="rlabel">
+                    Titik D
+                    (SE - Kanan Bawah)
+                  </div>
+
+                  <div
+                    style="
+                      font-family:var(--font-mono);
+                      font-size:13px;
+                      font-weight:600;
+                      color:var(--ink);
+                    "
+                    id="coordD"
+                  >
+                    –
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+      <strong>BASARNAS Aceh</strong>
+      &mdash;
+      Kantor Pencarian dan Pertolongan
+      Kelas A Banda Aceh.
+
+      <br>
+
+      Sistem Perencanaan Operasi SAR
+      berbasis
+      <em>
+        Search and Rescue Manual
+        (IMOSAR / IAMSAR)
+      </em>.
+
+    </footer>
+
+  </div>
+
+
+  <!-- =========================
+       LEAFLET JS
+  ========================= -->
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  ></script>
+
+
+  <script>
+
+    /* =========================
+       DOM ELEMENTS
+    ========================= */
+
+    const loginScreen =
+      document.getElementById('loginScreen');
+
+    const mainContent =
+      document.getElementById('mainContent');
+
+    const powerBtn =
+      document.getElementById('powerBtn');
+
+    const logoutBtn =
+      document.getElementById('logoutBtn');
+
+
+    /* =========================
+       INPUT ELEMENTS
+    ========================= */
+
+    const latInput =
+      document.getElementById('latInput');
+
+    const lngInput =
+      document.getElementById('lngInput');
+
+    const speedInput =
+      document.getElementById('speed');
+
+    const scaleInput =
+      document.getElementById('scale');
+
+    const manualValue =
+      document.getElementById('manualValue');
+
+    const manualUnit =
+      document.getElementById('manualUnit');
+
+    const elapsedDisplay =
+      document.getElementById('elapsedDisplay');
+
+    const speedUnitControl =
+      document.getElementById('speedUnitControl');
+
+
+    /* =========================
+       RESULT ELEMENTS
+    ========================= */
+
+    const r1Val =
+      document.getElementById('r1Val');
+
+    const area1Val =
+      document.getElementById('area1Val');
+
+    const r1cmVal =
+      document.getElementById('r1cmVal');
+
+
+    const r2Val =
+      document.getElementById('r2Val');
+
+    const area2Val =
+      document.getElementById('area2Val');
+
+    const r2cmVal =
+      document.getElementById('r2cmVal');
+
+
+    const sisiVal =
+      document.getElementById('sisiVal');
+
+    const areaFinalVal =
+      document.getElementById('areaFinalVal');
+
+
+    const coordA =
+      document.getElementById('coordA');
+
+    const coordB =
+      document.getElementById('coordB');
+
+    const coordC =
+      document.getElementById('coordC');
+
+    const coordD =
+      document.getElementById('coordD');
+
+
+    /* =========================
+       STATE
+    ========================= */
+
+    let appActive = false;
+
+    let speedUnit = 'hari';
+
+
+    /* =========================
+       MAP VARIABLES
+    ========================= */
+
+    let map = null;
+
+    let lkpMarker = null;
+
+    let possibleCircles = [];
+
+    let probableCircles = [];
+
+    let searchSquares = [];
+
+    let cornerMarkers = [];
+
+
+    /* =========================
+       DEFAULT LKP
+    ========================= */
+
+    const DEFAULT_LAT = 5.5480;
+
+    const DEFAULT_LNG = 95.3238;
+
+
+    /* =========================
+       FORM TAB SWITCHING (BARU)
+    ========================= */
+    const tabButtons = document.querySelectorAll('.form-tab-btn');
+    const tabPanes = document.querySelectorAll('.form-step-pane');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('active'));
+        tabPanes.forEach(p => p.classList.remove('active'));
+
+        btn.classList.add('active');
+        const targetPane = document.getElementById(btn.dataset.target);
+        if (targetPane) {
+          targetPane.classList.add('active');
+        }
+      });
+    });
+
+
+    /* =========================
+       POWER BUTTON
+    ========================= */
+
+    powerBtn.addEventListener(
+      'click',
+      () => {
+
+        loginScreen.style.display =
+          'none';
+
+        mainContent.style.display =
+          'block';
+
+        appActive = true;
+
+
+        if(!latInput.value){
+          latInput.value = DEFAULT_LAT;
+        }
+
+        if(!lngInput.value){
+          lngInput.value = DEFAULT_LNG;
+        }
+
+        if(!speedInput.value){
+          speedInput.value = 2;
+        }
+
+        if(!scaleInput.value){
+          scaleInput.value = 50000;
+        }
+
+
+        try{
+          initMap();
+        }catch(err){
+          console.error('Gagal memuat peta (mungkin tidak ada koneksi internet):', err);
+        }
+
+
+        setTimeout(
+          () => {
+
+            if(map){
+              map.invalidateSize();
+            }
+
+            // Hasil perhitungan tetap dijalankan
+            // walau peta gagal dimuat (mis. offline),
+            // karena angka hasil tidak bergantung pada Leaflet.
+            recalculate();
+
+          },
+          100
+        );
+
+      }
+    );
+
+
+    /* =========================
+       KEMBALI
+    ========================= */
+
+    logoutBtn.addEventListener(
+      'click',
+      () => {
+
+        mainContent.style.display =
+          'none';
+
+        loginScreen.style.display =
+          'flex';
+
+        appActive = false;
+
+      }
+    );
+
+
+    /* =========================
+       INITIALIZE MAP
+    ========================= */
+
+    function initMap(){
+
+      if(map){
+
+        map.invalidateSize();
+
+        return;
+
+      }
+
+
+      map =
+        L.map('map').setView(
+          [
+            DEFAULT_LAT,
+            DEFAULT_LNG
+          ],
+          11
+        );
+
+
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        {
+          maxZoom:19,
+
+          subdomains:'abcd',
+
+          attribution:
+            '&copy; OpenStreetMap contributors &copy; CARTO'
+        }
+      ).addTo(map);
+
+    }
+
+
+    /* =========================
+       SPEED UNIT
+    ========================= */
+
+    speedUnitControl
+      .querySelectorAll('button')
+      .forEach(
+        btn => {
+
+          btn.addEventListener(
+            'click',
+            e => {
+
+              speedUnitControl
+                .querySelectorAll('button')
+                .forEach(
+                  b =>
+                    b.classList.remove(
+                      'active'
+                    )
+                );
+
+
+              e.target.classList.add(
+                'active'
+              );
+
+
+              speedUnit =
+                e.target.dataset.unit;
+
+
+              recalculate();
+
+            }
+          );
+
+        }
+      );
+
+
+    /* =========================
+       INPUT LISTENERS
+    ========================= */
+
+    [
+      latInput,
+      lngInput,
+      speedInput,
+      scaleInput,
+      manualValue,
+      manualUnit
+    ].forEach(
+      el => {
+
+        if(el){
+
+          el.addEventListener(
+            'input',
+            recalculate
+          );
+
+          el.addEventListener(
+            'change',
+            recalculate
+          );
+
+        }
+
+      }
+    );
+
+
+    /* =========================
+       GET MANUAL HOURS
+    ========================= */
+
+    function getElapsedHours(){
+
+      const value =
+        parseFloat(
+          manualValue.value
+        ) || 0;
+
+      // Waktu tidak boleh negatif.
+      const safeValue =
+        value < 0 ? 0 : value;
+
+
+      if(
+        manualUnit.value ===
+        'hari'
+      ){
+
+        return safeValue * 24;
+
+      }
+
+
+      return safeValue;
+
+    }
+
+
+    /* =========================
+       VALIDATE COORDINATE INPUT
+       Mencegah nilai LKP yang tidak
+       valid (mis. lat 200) diam-diam
+       diganti ke koordinat markas,
+       yang bisa menyesatkan tim SAR
+       di lapangan.
+    ========================= */
+
+    function getValidatedCoord(
+      inputEl,
+      fieldId,
+      min,
+      max,
+      fallback
+    ){
+
+      const raw = inputEl.value;
+
+      const fieldEl =
+        document.getElementById(fieldId);
+
+      const val = parseFloat(raw);
+
+      if(raw === '' || isNaN(val)){
+
+        if(fieldEl){
+          fieldEl.classList.remove('has-error');
+        }
+
+        return fallback;
+
+      }
+
+      if(val < min || val > max){
+
+        if(fieldEl){
+          fieldEl.classList.add('has-error');
+        }
+
+        // Tetap hitung dengan nilai yang
+        // dibatasi (clamped) ke rentang valid,
+        // sambil menampilkan peringatan visual,
+        // supaya hasil tidak diam-diam melompat
+        // ke koordinat markas.
+        return Math.min(
+          Math.max(val, min),
+          max
+        );
+
+      }
+
+      if(fieldEl){
+        fieldEl.classList.remove('has-error');
+      }
+
+      return val;
+
+    }
+
+
+    /* =========================
+       FORMAT COORDINATE
+    ========================= */
+
+    function formatCoord(
+      lat,
+      lng
+    ){
+
+      const latDir =
+        lat >= 0
+          ? 'N'
+          : 'S';
+
+
+      const lngDir =
+        lng >= 0
+          ? 'E'
+          : 'W';
+
+
+      const absLat =
+        Math.abs(lat);
+
+
+      const absLng =
+        Math.abs(lng);
+
+
+      const latDeg =
+        Math.floor(absLat);
+
+
+      const latMin =
+        (absLat - latDeg) * 60;
+
+
+      const lngDeg =
+        Math.floor(absLng);
+
+
+      const lngMin =
+        (absLng - lngDeg) * 60;
+
+
+      return `${latDeg}°${latMin.toFixed(2)}'${latDir}  ${lngDeg}°${lngMin.toFixed(2)}'${lngDir}`;
+
+    }
+
+
+    /* =========================
+       FORMAT ELAPSED
+    ========================= */
+
+    function formatElapsed(hours){
+
+      if(hours <= 0){
+
+        return '0 jam (0 hari)';
+
+      }
+
+
+      const days =
+        Math.floor(
+          hours / 24
+        );
+
+
+      const remainingHours =
+        hours % 24;
+
+
+      if(days > 0){
+
+        return `${hours.toFixed(1)} jam (~${days} hari ${remainingHours.toFixed(1)} jam)`;
+
+      }
+
+
+      return `${hours.toFixed(1)} jam`;
+
+    }
+
+
+    /* =========================
+       MAIN CALCULATION
+    ========================= */
+
+    function recalculate(){
+
+      if(!appActive){
+
+        return;
+
+      }
+
+
+      const lat =
+        getValidatedCoord(
+          latInput,
+          'latField',
+          -90,
+          90,
+          DEFAULT_LAT
+        );
+
+
+      const lng =
+        getValidatedCoord(
+          lngInput,
+          'lngField',
+          -180,
+          180,
+          DEFAULT_LNG
+        );
+
+
+      let speedVal =
+        parseFloat(
+          speedInput.value
+        ) || 0;
+
+      if(speedVal < 0){
+        speedVal = 0;
+      }
+
+
+      let scale =
+        parseFloat(
+          scaleInput.value
+        ) || 50000;
+
+      if(scale <= 0){
+        scale = 50000;
+      }
+
+
+      const hours =
+        getElapsedHours();
+
+
+      const days =
+        hours / 24;
+
+
+      elapsedDisplay.textContent =
+        formatElapsed(hours);
+
+
+      let speedPerHour;
+
+
+      if(speedUnit === 'hari'){
+
+        speedPerHour =
+          speedVal / 24;
+
+      }else{
+
+        speedPerHour =
+          speedVal;
+
+      }
+
+
+      let r1 =
+        speedPerHour * hours;
+
+
+      if(r1 < 0){
+
+        r1 = 0;
+
+      }
+
+
+      const area1 =
+        Math.PI *
+        Math.pow(r1,2);
+
+
+      const r1cm =
+        scale > 0
+          ? (
+              r1 *
+              100000 /
+              scale
+            )
+          : 0;
+
+
+      const r2 =
+        r1 /
+        Math.sqrt(8);
+
+
+      const area2 =
+        Math.PI *
+        Math.pow(r2,2);
+
+
+      const r2cm =
+        scale > 0
+          ? (
+              r2 *
+              100000 /
+              scale
+            )
+          : 0;
+
+
+      const sisi =
+        2 * r2;
+
+
+      const areaFinal =
+        Math.pow(
+          sisi,
+          2
+        );
+
+
+      r1Val.textContent =
+        r1.toFixed(2);
+
+
+      area1Val.textContent =
+        area1.toFixed(2);
+
+
+      r1cmVal.textContent =
+        r1cm.toFixed(1);
+
+
+      r2Val.textContent =
+        r2.toFixed(2);
+
+
+      area2Val.textContent =
+        area2.toFixed(2);
+
+
+      r2cmVal.textContent =
+        r2cm.toFixed(1);
+
+
+      sisiVal.textContent =
+        sisi.toFixed(2);
+
+
+      areaFinalVal.textContent =
+        areaFinal.toFixed(2);
+
+
+      const kmPerLat =
+        111.0;
+
+
+      const kmPerLng =
+        111.0 *
+        Math.cos(
+          lat *
+          Math.PI /
+          180
+        );
+
+
+      const halfSisiKm =
+        sisi / 2;
+
+
+      const dLat =
+        halfSisiKm /
+        kmPerLat;
+
+
+      const dLng =
+        kmPerLng !== 0
+          ? halfSisiKm /
+            kmPerLng
+          : 0;
+
+
+      const latMin =
+        lat - dLat;
+
+
+      const latMax =
+        lat + dLat;
+
+
+      const lngMin =
+        lng - dLng;
+
+
+      const lngMax =
+        lng + dLng;
+
+
+      coordA.textContent =
+        formatCoord(
+          latMin,
+          lngMin
+        );
+
+
+      coordB.textContent =
+        formatCoord(
+          latMax,
+          lngMin
+        );
+
+
+      coordC.textContent =
+        formatCoord(
+          latMax,
+          lngMax
+        );
+
+
+      coordD.textContent =
+        formatCoord(
+          latMin,
+          lngMax
+        );
+
+
+      if(!map){
+
+        return;
+
+      }
+
+
+      if(lkpMarker){
+
+        map.removeLayer(
+          lkpMarker
+        );
+
+      }
+
+
+      if(possibleCircles.length){
+
+        possibleCircles.forEach(
+          circle => {
+
+            map.removeLayer(
+              circle
+            );
+
+          }
+        );
+
+        possibleCircles = [];
+
+      }
+
+
+      if(probableCircles.length){
+
+        probableCircles.forEach(
+          circle => {
+
+            map.removeLayer(
+              circle
+            );
+
+          }
+        );
+
+        probableCircles = [];
+
+      }
+
+
+      if(searchSquares.length){
+
+        searchSquares.forEach(
+          square => {
+
+            map.removeLayer(
+              square
+            );
+
+          }
+        );
+
+        searchSquares = [];
+
+      }
+
+
+      cornerMarkers.forEach(
+        marker => {
+
+          map.removeLayer(
+            marker
+          );
+
+        }
+      );
+
+
+      cornerMarkers = [];
+
+
+      lkpMarker =
+        L.marker(
+          [
+            lat,
+            lng
+          ]
+        )
+        .addTo(map)
+        .bindPopup(
+          `<b>LKP Korban</b><br>
+           Lat: ${lat}<br>
+           Lng: ${lng}`
+        );
+
+
+      const bounds = [
+        [
+          latMin,
+          lngMin
+        ],
+
+        [
+          latMax,
+          lngMax
+        ]
+      ];
+
+      if(r1 > 0){
+
+        const fullDays =
+          Math.floor(
+            hours / 24
+          );
+
+        const checkpoints = [];
+
+        for(
+          let d = 1;
+          d <= fullDays;
+          d++
+        ){
+
+          checkpoints.push(
+            d * 24
+          );
+
+        }
+
+        if(
+          checkpoints.length === 0 ||
+          checkpoints[
+            checkpoints.length - 1
+          ] < hours
+        ){
+
+          checkpoints.push(
+            hours
+          );
+
+        }
+
+        checkpoints.forEach(
+          (h, idx) => {
+
+            const isLast =
+              idx ===
+              checkpoints.length - 1;
+
+            const rDayPossible =
+              speedPerHour * h;
+
+            const rDayProbable =
+              rDayPossible /
+              Math.sqrt(8);
+
+            const isFullDay =
+              h % 24 === 0;
+
+            const dayLabel =
+              isFullDay
+                ? `Hari ${h / 24}`
+                : `${h.toFixed(1)} jam`;
+
+            const possible =
+              L.circle(
+                [
+                  lat,
+                  lng
+                ],
+                {
+                  radius:
+                    rDayPossible * 1000,
+
+                  color:'#45B39E',
+
+                  fillColor:'#45B39E',
+
+                  fillOpacity:0.1,
+
+                  weight:1.5
+                }
+              )
+              .addTo(map)
+              .bindPopup(
+                `<b>Possible Search Area – ${dayLabel}</b><br>
+                 Radius: ${rDayPossible.toFixed(2)} km`
+              );
+
+            possibleCircles.push(
+              possible
+            );
+
+            const probable =
+              L.circle(
+                [
+                  lat,
+                  lng
+                ],
+                {
+                  radius:
+                    rDayProbable * 1000,
+
+                  color:'#FF6A2E',
+
+                  fillColor:'#FF6A2E',
+
+                  fillOpacity:0.15,
+
+                  weight:2
+                }
+              )
+              .addTo(map)
+              .bindPopup(
+                `<b>Probable Search Area – ${dayLabel}</b><br>
+                 Radius: ${rDayProbable.toFixed(2)} km`
+              );
+
+            probableCircles.push(
+              probable
+            );
+
+            const sisiDay =
+              2 * rDayProbable;
+
+            const halfSisiDayKm =
+              sisiDay / 2;
+
+            const dLatDay =
+              halfSisiDayKm /
+              kmPerLat;
+
+            const dLngDay =
+              kmPerLng !== 0
+                ? halfSisiDayKm /
+                  kmPerLng
+                : 0;
+
+            const dayBounds = [
+              [
+                lat - dLatDay,
+                lng - dLngDay
+              ],
+
+              [
+                lat + dLatDay,
+                lng + dLngDay
+              ]
+            ];
+
+            const square =
+              L.rectangle(
+                dayBounds,
+                {
+                  color:'#D8AA5D',
+
+                  weight:
+                    isLast
+                      ? 2
+                      : 1.5,
+
+                  fill:false,
+
+                  dashArray:'4, 4'
+                }
+              )
+              .addTo(map)
+              .bindPopup(
+                `<b>Search Area Akhir – ${dayLabel}</b><br>
+                 Sisi: ${sisiDay.toFixed(2)} km`
+              );
+
+            searchSquares.push(
+              square
+            );
+
+          }
+        );
+
+      }
+
+
+      const corners = [
+
+        {
+          lat:latMin,
+          lng:lngMin,
+          label:'A (SW)'
+        },
+
+        {
+          lat:latMax,
+          lng:lngMin,
+          label:'B (NW)'
+        },
+
+        {
+          lat:latMax,
+          lng:lngMax,
+          label:'C (NE)'
+        },
+
+        {
+          lat:latMin,
+          lng:lngMax,
+          label:'D (SE)'
+        }
+
+      ];
+
+
+      corners.forEach(
+        corner => {
+
+          const icon =
+            L.divIcon(
+              {
+                className:
+                  'map-corner-label',
+
+                html:
+                  corner.label
+              }
+            );
+
+
+          const marker =
+            L.marker(
+              [
+                corner.lat,
+                corner.lng
+              ],
+              {
+                icon:icon
+              }
+            )
+            .addTo(map);
+
+
+          cornerMarkers.push(
+            marker
+          );
+
+        }
+      );
+
+
+      if(r1 > 0){
+
+        map.fitBounds(
+          bounds,
+          {
+            padding:[
+              30,
+              30
+            ]
+          }
+        );
+
+      }else{
+
+        map.setView(
+          [
+            lat,
+            lng
+          ],
+          11
+        );
+
+      }
+
+    }
+
+  </script>
+
+</body>
+</html>
